@@ -33,6 +33,8 @@ class PHPExcel_Worksheet_Drawing extends PHPExcel_Worksheet_BaseDrawing implemen
      * @var string
      */
     private $path;
+    private $link;
+    private $linkTarget;
 
     /**
      * Create a new PHPExcel_Worksheet_Drawing
@@ -41,9 +43,43 @@ class PHPExcel_Worksheet_Drawing extends PHPExcel_Worksheet_BaseDrawing implemen
     {
         // Initialise values
         $this->path = '';
-
+        $this->link = '';
+        $this->linkTarget = '';
         // Initialize parent
         parent::__construct();
+    }
+
+    /**
+     * @return string
+     */
+    public function getLinkTarget()
+    {
+        return $this->linkTarget;
+    }
+
+    /**
+     * @param string $linkTarget
+     */
+    public function setLinkTarget($linkTarget)
+    {
+        $this->linkTarget = $linkTarget;
+    }
+
+
+    /**
+     * @return string
+     */
+    public function getLink()
+    {
+        return $this->link;
+    }
+
+    /**
+     * @param string $link
+     */
+    public function setLink($link)
+    {
+        $this->link = $link;
     }
 
     /**
@@ -92,8 +128,8 @@ class PHPExcel_Worksheet_Drawing extends PHPExcel_Worksheet_BaseDrawing implemen
     /**
      * Set Path
      *
-     * @param     string         $pValue            File path
-     * @param     boolean        $pVerifyFile    Verify file
+     * @param     string $pValue File path
+     * @param     boolean $pVerifyFile Verify file
      * @throws     PHPExcel_Exception
      * @return PHPExcel_Worksheet_Drawing
      */
