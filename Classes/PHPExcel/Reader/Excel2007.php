@@ -1428,10 +1428,13 @@ class PHPExcel_Reader_Excel2007 extends PHPExcel_Reader_Abstract implements PHPE
                                         $relsDrawing = simplexml_load_string($this->securityScan($this->getFromZipArchive($zip, dirname($fileDrawing) . "/_rels/" . basename($fileDrawing) . ".rels")), 'SimpleXMLElement', PHPExcel_Settings::getLibXmlLoaderOptions()); //~ http://schemas.openxmlformats.org/package/2006/relationships");
                                         $images = array();
 
+                                        $hlinkClickIdTargetDic = array();
                                         if ($relsDrawing && $relsDrawing->Relationship) {
                                             foreach ($relsDrawing->Relationship as $ele) {
                                                 if ($ele["Type"] == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image") {
                                                     $images[(string)$ele["Id"]] = self::dirAdd($fileDrawing, $ele["Target"]);
+                                                } elseif ($ele['Type'] == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink") {
+                                                    $hlinkClickIdTargetDic[(string)$ele["Id"]] = (string)$ele["Target"];
                                                 } elseif ($ele["Type"] == "http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart") {
                                                     if ($this->includeCharts) {
                                                         $charts[self::dirAdd($fileDrawing, $ele["Target"])] = array(
@@ -1449,11 +1452,16 @@ class PHPExcel_Reader_Excel2007 extends PHPExcel_Reader_Abstract implements PHPE
                                                 if ($oneCellAnchor->pic->blipFill) {
                                                     $blip = $oneCellAnchor->pic->blipFill->children("http://schemas.openxmlformats.org/drawingml/2006/main")->blip;
                                                     $xfrm = $oneCellAnchor->pic->spPr->children("http://schemas.openxmlformats.org/drawingml/2006/main")->xfrm;
+                                                    $hlinkClick = $oneCellAnchor->pic->nvPicPr->cNvPr->children("http://schemas.openxmlformats.org/drawingml/2006/main")->hlinkClick;
+                                                    $hlinkClickId = (string)self::getArrayItem($hlinkClick->attributes("http://schemas.openxmlformats.org/officeDocument/2006/relationships"), "id");
+                                                    $hlinkClickTarget = $hlinkClickIdTargetDic[$hlinkClickId];
                                                     $outerShdw = $oneCellAnchor->pic->spPr->children("http://schemas.openxmlformats.org/drawingml/2006/main")->effectLst->outerShdw;
                                                     $objDrawing = new PHPExcel_Worksheet_Drawing;
                                                     $objDrawing->setName((string)self::getArrayItem($oneCellAnchor->pic->nvPicPr->cNvPr->attributes(), "name"));
                                                     $objDrawing->setDescription((string)self::getArrayItem($oneCellAnchor->pic->nvPicPr->cNvPr->attributes(), "descr"));
                                                     $objDrawing->setPath("zip://" . PHPExcel_Shared_File::realpath($pFilename) . "#" . $images[(string)self::getArrayItem($blip->attributes("http://schemas.openxmlformats.org/officeDocument/2006/relationships"), "embed")], false);
+                                                    $objDrawing->setLink($hlinkClickId);
+                                                    $objDrawing->setLinkTarget($hlinkClickTarget);
                                                     $objDrawing->setCoordinates(PHPExcel_Cell::stringFromColumnIndex((string)$oneCellAnchor->from->col) . ($oneCellAnchor->from->row + 1));
                                                     $objDrawing->setOffsetX(PHPExcel_Shared_Drawing::EMUToPixels($oneCellAnchor->from->colOff));
                                                     $objDrawing->setOffsetY(PHPExcel_Shared_Drawing::EMUToPixels($oneCellAnchor->from->rowOff));
@@ -1489,11 +1497,16 @@ class PHPExcel_Reader_Excel2007 extends PHPExcel_Reader_Abstract implements PHPE
                                                 if ($twoCellAnchor->pic->blipFill) {
                                                     $blip = $twoCellAnchor->pic->blipFill->children("http://schemas.openxmlformats.org/drawingml/2006/main")->blip;
                                                     $xfrm = $twoCellAnchor->pic->spPr->children("http://schemas.openxmlformats.org/drawingml/2006/main")->xfrm;
+                                                    $hlinkClick = $twoCellAnchor->pic->nvPicPr->cNvPr->children("http://schemas.openxmlformats.org/drawingml/2006/main")->hlinkClick;
+                                                    $hlinkClickId = (string)self::getArrayItem($hlinkClick->attributes("http://schemas.openxmlformats.org/officeDocument/2006/relationships"), "id");
+                                                    $hlinkClickTarget = $hlinkClickIdTargetDic[$hlinkClickId];
                                                     $outerShdw = $twoCellAnchor->pic->spPr->children("http://schemas.openxmlformats.org/drawingml/2006/main")->effectLst->outerShdw;
                                                     $objDrawing = new PHPExcel_Worksheet_Drawing;
                                                     $objDrawing->setName((string)self::getArrayItem($twoCellAnchor->pic->nvPicPr->cNvPr->attributes(), "name"));
                                                     $objDrawing->setDescription((string)self::getArrayItem($twoCellAnchor->pic->nvPicPr->cNvPr->attributes(), "descr"));
                                                     $objDrawing->setPath("zip://" . PHPExcel_Shared_File::realpath($pFilename) . "#" . $images[(string)self::getArrayItem($blip->attributes("http://schemas.openxmlformats.org/officeDocument/2006/relationships"), "embed")], false);
+                                                    $objDrawing->setLink($hlinkClickId);
+                                                    $objDrawing->setLinkTarget($hlinkClickTarget);
                                                     $objDrawing->setCoordinates(PHPExcel_Cell::stringFromColumnIndex((string)$twoCellAnchor->from->col) . ($twoCellAnchor->from->row + 1));
                                                     $objDrawing->setOffsetX(PHPExcel_Shared_Drawing::EMUToPixels($twoCellAnchor->from->colOff));
                                                     $objDrawing->setOffsetY(PHPExcel_Shared_Drawing::EMUToPixels($twoCellAnchor->from->rowOff));
