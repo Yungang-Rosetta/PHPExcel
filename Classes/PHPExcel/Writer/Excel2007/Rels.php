@@ -320,6 +320,16 @@ class PHPExcel_Writer_Excel2007_Rels extends PHPExcel_Writer_Excel2007_WriterPar
         while ($iterator->valid()) {
             if ($iterator->current() instanceof PHPExcel_Worksheet_Drawing
                 || $iterator->current() instanceof PHPExcel_Worksheet_MemoryDrawing) {
+                if ($iterator->current()->getLink() != '') {
+                    $this->writeRelationship(
+                        $objWriter,
+                        $i,
+                        'http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink',
+                        $iterator->current()->getLinkTarget()
+                    );
+                    ++$i;
+                }
+
                 // Write relationship for image drawing
                 $this->writeRelationship(
                     $objWriter,
