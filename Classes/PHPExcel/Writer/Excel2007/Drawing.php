@@ -58,6 +58,9 @@ class PHPExcel_Writer_Excel2007_Drawing extends PHPExcel_Writer_Excel2007_Writer
         $i = 1;
         $iterator = $pWorksheet->getDrawingCollection()->getIterator();
         while ($iterator->valid()) {
+            if ($iterator->current()->getLink()!=''){
+                ++$i;
+            }
             $this->writeDrawing($objWriter, $iterator->current(), $i);
 
             $iterator->next();
@@ -160,7 +163,7 @@ class PHPExcel_Writer_Excel2007_Drawing extends PHPExcel_Writer_Excel2007_Writer
      * @param     int                                    $pRelationId
      * @throws     PHPExcel_Writer_Exception
      */
-    public function writeDrawing(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_Worksheet_BaseDrawing $pDrawing = null, $pRelationId = -1)
+    public function writeDrawing(PHPExcel_Shared_XMLWriter $objWriter = null, PHPExcel_Worksheet_Drawing $pDrawing = null, $pRelationId = -1)
     {
         if ($pRelationId >= 0) {
             // xdr:oneCellAnchor
@@ -194,6 +197,12 @@ class PHPExcel_Writer_Excel2007_Drawing extends PHPExcel_Writer_Excel2007_Writer
             $objWriter->writeAttribute('id', $pRelationId);
             $objWriter->writeAttribute('name', $pDrawing->getName());
             $objWriter->writeAttribute('descr', $pDrawing->getDescription());
+            if ($pDrawing->getLink() != '') {
+                $objWriter->startElement('a:hlinkClick');
+                $objWriter->writeAttribute('xmlns:r', 'http://schemas.openxmlformats.org/officeDocument/2006/relationships');
+                $objWriter->writeAttribute('r:id', $pDrawing->getLink());
+                $objWriter->endElement();
+            }
             $objWriter->endElement();
 
             // xdr:cNvPicPr
